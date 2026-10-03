@@ -1,0 +1,9 @@
+{
+  "project_type": "greenfield",
+  "detected_stack": {},
+  "file_tree": [],
+  "total_files": 0,
+  "entry_points": {},
+  "config_files": [],
+  "brd_summary": "**Governance Classification: SANDBOX**\n\n\u2705 **Sandbox Approved** - This project has low governance overhead.\n\n**What you get:**\n- Azure Dev subscription (capped budget)\n- No production data allowed\n- 90-day review cycle\n- Self-service deployment\n\n**Weighted Score: 0.0/10**\n\n**Dimension Scores:**\n- Business Value & Urgency: 0.0/10\n- Data Sensitivity: 0.0/10\n- Integration & Architecture Complexity: 0.0/10\n- Operational Impact: 0.0/10\n- AI Risk: 0.0/10\n- Ownership & Support: 0.0/10\n"
+}
