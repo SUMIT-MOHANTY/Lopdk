@@ -64,6 +64,6 @@
         "depends_on": [
             "TASK-04"
         ],
-        "status": "running"
+        "status": "completed"
     }
 ]

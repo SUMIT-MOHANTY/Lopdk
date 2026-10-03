@@ -19,5 +19,15 @@
             "status": "completed"
         },
         "timestamp": "2026-10-03T09:45:21.721287"
+    },
+    {
+        "sender": "Supervisor",
+        "recipient": "ALL",
+        "type": "dependency_ready",
+        "payload": {
+            "task_id": "b2696e75-ffbd-4f69-a66b-c2a87ed4a57b_TASK-00",
+            "status": "completed"
+        },
+        "timestamp": "2026-10-03T09:47:24.025495"
     }
 ]
