@@ -1,16 +1,17 @@
 # ---------------------------------------------------------------------------
 # Continuous Integration Pipeline
 # Runs on every push and pull-request targeting main / master.
-# Steps: install deps → lint (flake8) → test with coverage gating (≥ 80 %)
+# Steps: install deps → lint (flake8) → Django system check → test with
+#        coverage gating (≥ 80 %)
 # ---------------------------------------------------------------------------
 
 name: CI
 
 on:
   push:
-    branches: ["main", "master", "develop"]
+    branches: ["main", "master"]
   pull_request:
-    branches: ["main", "master", "develop"]
+    branches: ["main", "master"]
 
 jobs:
   build:
@@ -30,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
 
       # -----------------------------------------------------------------------
-      # 2. Set up Python
+      # 2. Set up Python with pip caching
       # -----------------------------------------------------------------------
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -47,23 +48,33 @@ jobs:
           pip install -r requirements.txt
 
       # -----------------------------------------------------------------------
-      # 4. Create a minimal .env so Django settings can load
+      # 4. Configure environment variables from repository secrets
+      #    SECRET_KEY and DEBUG come from GitHub repository secrets.
+      #    ALLOWED_HOSTS is set to a safe CI value.
       # -----------------------------------------------------------------------
-      - name: Create .env for CI
+      - name: Configure environment variables
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: ${{ secrets.DEBUG }}
         run: |
-          echo "SECRET_KEY=ci-only-insecure-secret-key-$(openssl rand -hex 16)" >> .env
-          echo "DEBUG=True" >> .env
-          echo "ALLOWED_HOSTS=*" >> .env
+          # Use secret if available, otherwise generate a safe CI-only key
+          CI_SECRET_KEY="${SECRET_KEY:-ci-only-insecure-key-$(openssl rand -hex 20)}"
+          CI_DEBUG="${DEBUG:-False}"
+
+          echo "SECRET_KEY=${CI_SECRET_KEY}" >> .env
+          echo "DEBUG=${CI_DEBUG}" >> .env
+          echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
+          echo "DJANGO_SETTINGS_MODULE=config.settings.development" >> .env
 
       # -----------------------------------------------------------------------
-      # 5. Lint with flake8
+      # 5. Lint with flake8 — fails pipeline on any style error
       # -----------------------------------------------------------------------
       - name: Lint with flake8
         run: |
           flake8 . --count --statistics
 
       # -----------------------------------------------------------------------
-      # 6. Run Django system checks
+      # 6. Run Django system checks (development settings for CI)
       # -----------------------------------------------------------------------
       - name: Django system check
         env:
@@ -72,16 +83,21 @@ jobs:
           python manage.py check --settings=config.settings.development
 
       # -----------------------------------------------------------------------
-      # 7. Run tests with coverage gating
+      # 7. Run tests with coverage gating — fails if coverage < 80 %
       # -----------------------------------------------------------------------
       - name: Run tests with coverage
         env:
           DJANGO_SETTINGS_MODULE: config.settings.development
         run: |
-          pytest --cov=. --cov-report=term-missing --cov-fail-under=80
+          pytest \
+            --cov=. \
+            --cov-config=setup.cfg \
+            --cov-report=term-missing \
+            --cov-report=html:htmlcov \
+            --cov-fail-under=80
 
       # -----------------------------------------------------------------------
-      # 8. Upload coverage report as artifact (optional, non-blocking)
+      # 8. Upload HTML coverage report as a build artifact
       # -----------------------------------------------------------------------
       - name: Upload coverage report
         if: always()

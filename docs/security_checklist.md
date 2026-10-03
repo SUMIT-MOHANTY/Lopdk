@@ -12,14 +12,18 @@ It must be loaded exclusively from the environment.
 
 **Verification command:**
 ```bash
-grep -r "SECRET_KEY" config/settings/
+grep -rn "SECRET_KEY" config/settings/
 ```
 
 **Expected result:** Every occurrence should reference `os.environ` or
 `os.getenv` (e.g., `SECRET_KEY = os.environ.get('SECRET_KEY', '')`).  
 No line should contain a literal string value assigned directly to `SECRET_KEY`.
 
-**Status:** ✅ Enforced in `config/settings/base.py` via `os.environ`.
+**Implementation:** `config/settings/base.py` reads `SECRET_KEY` from
+`os.environ`. `config/settings/production.py` calls `_require_env("SECRET_KEY")`
+which raises `ImproperlyConfigured` if the variable is absent or empty.
+
+**Status:** ✅ Enforced — no hardcoded `SECRET_KEY` in any settings file.
 
 ---
 
@@ -40,10 +44,11 @@ from config.settings import production
 ```
 
 **Expected result:** `django.core.exceptions.ImproperlyConfigured` is raised
-with the message *"DEBUG is set to True"*.
+with a message indicating `DEBUG` must be `False` in production.
 
 **Implementation:** `config/settings/production.py` raises
-`ImproperlyConfigured` at import time if `DEBUG` evaluates to `True`.
+`ImproperlyConfigured` at import time if `DEBUG` evaluates to `True`
+(checks for string values `"true"`, `"1"`, `"yes"`).
 
 **Status:** ✅ Enforced via startup assertion in `production.py`.
 
@@ -76,6 +81,10 @@ from config.settings import production
 ```
 
 **Expected result:** Both commands raise `ImproperlyConfigured`.
+
+**Implementation:** `production.py` uses `_require_env("ALLOWED_HOSTS")` to
+ensure the variable is set, then explicitly checks that the parsed list is
+non-empty and does not contain `'*'`.
 
 **Status:** ✅ Enforced via startup assertions in `production.py`.
 
@@ -125,8 +134,8 @@ originate from user input (form fields, model fields entered by users).
 ## 6. Input Sanitization via Django Auto-Escaping
 
 **Control:** Django's template engine auto-escapes all variables by default.
-No template should disable this with `{% autoescape off %}` or use
-`{% autoescape off %}` blocks around user data.
+No template should disable this with `{% autoescape off %}` blocks around
+user data.
 
 **Verification commands:**
 ```bash
@@ -153,12 +162,19 @@ following automated quality gates on every push and pull request to `main`:
 | Gate | Tool | Failure Condition |
 |---|---|---|
 | Code style | Flake8 (max-line-length=119) | Any lint error |
-| Django deployment checks | `manage.py check --deploy` | Any system check warning/error |
+| Django deployment checks | `manage.py check` | Any system check warning/error |
 | Unit tests | Pytest | Any test failure |
 | Code coverage | pytest-cov | Coverage < 80% |
 
 **Pipeline file:** `.github/workflows/ci.yml`  
 **Lint config:** `setup.cfg` — `[flake8]`, `[tool:pytest]`, `[coverage:run]`, `[coverage:report]`
+
+**Secrets required in GitHub repository settings:**
+
+| Secret Name | Description | Required |
+|---|---|---|
+| `SECRET_KEY` | Django cryptographic signing key | Recommended |
+| `DEBUG` | Debug flag (`False` for CI) | Optional (defaults to `False`) |
 
 ---
 
@@ -171,8 +187,10 @@ All required environment variables are documented in `.env.example`:
 | `SECRET_KEY` | ✅ Yes | Django cryptographic signing key |
 | `DEBUG` | ✅ Yes | `False` in production, `True` in development |
 | `ALLOWED_HOSTS` | ✅ Yes | Comma-separated list of valid hostnames |
-| `DATABASE_URL` | ✅ Yes | Database connection string |
-| `DJANGO_SETTINGS_MODULE` | Recommended | Settings module path |
+| `DJANGO_SETTINGS_MODULE` | ✅ Yes | Settings module path |
+| `DATABASE_URL` | Recommended | Database connection string |
+| `SECURE_SSL_REDIRECT` | Optional | Redirect HTTP→HTTPS (default: `True`) |
+| `CORS_ALLOWED_ORIGINS` | Optional | Comma-separated CORS origins |
 
 ---
 
@@ -182,20 +200,50 @@ Run all security checks at once:
 
 ```bash
 echo "=== 1. SECRET_KEY hardcoded check ==="
-grep -rn "SECRET_KEY\s*=\s*['\"]" config/settings/ && echo "FAIL: hardcoded SECRET_KEY found" || echo "PASS: no hardcoded SECRET_KEY"
+grep -rn "SECRET_KEY\s*=\s*['\"]" config/settings/ \
+  && echo "FAIL: hardcoded SECRET_KEY found" \
+  || echo "PASS: no hardcoded SECRET_KEY"
 
 echo "=== 2. CSRF tokens in forms ==="
-grep -l "csrf_token" templates/todos/todo_form.html templates/todos/todo_confirm_delete.html
+grep -l "csrf_token" \
+  templates/todos/todo_form.html \
+  templates/todos/todo_confirm_delete.html \
+  && echo "PASS: csrf_token present" \
+  || echo "FAIL: csrf_token missing"
 
 echo "=== 3. |safe filter audit ==="
-grep -rn "|safe" templates/ && echo "WARNING: |safe found — review manually" || echo "PASS: no |safe filters"
+grep -rn "|safe" templates/ \
+  && echo "WARNING: |safe found — review manually" \
+  || echo "PASS: no |safe filters"
 
 echo "=== 4. autoescape off audit ==="
-grep -rn "autoescape off" templates/ && echo "FAIL: autoescape disabled" || echo "PASS: auto-escaping active"
+grep -rn "autoescape off" templates/ \
+  && echo "FAIL: autoescape disabled" \
+  || echo "PASS: auto-escaping active"
 
-echo "=== 5. Flake8 lint ==="
+echo "=== 5. mark_safe audit ==="
+grep -rn "mark_safe" apps/ \
+  && echo "WARNING: mark_safe found — review manually" \
+  || echo "PASS: no mark_safe usage"
+
+echo "=== 6. Flake8 lint ==="
 flake8 . --config=setup.cfg
 
-echo "=== 6. Pytest with coverage ==="
+echo "=== 7. Pytest with coverage ==="
 pytest --cov=. --cov-config=setup.cfg --cov-report=term-missing --cov-fail-under=80
 ```
+
+---
+
+## Security Controls Summary
+
+| Control | Implementation | Status |
+|---|---|---|
+| `SECRET_KEY` env-only | `base.py` reads from `os.environ`; `production.py` raises if empty | ✅ |
+| `DEBUG=False` production | `production.py` startup assertion | ✅ |
+| `ALLOWED_HOSTS` configured | `production.py` startup assertion (no empty, no `*`) | ✅ |
+| CSRF on all forms | `{% csrf_token %}` in `todo_form.html` & `todo_confirm_delete.html` | ✅ |
+| No `\|safe` on user data | Template audit — zero occurrences | ✅ |
+| Input sanitization | Django auto-escaping (default); no `autoescape off` blocks | ✅ |
+| Lint enforcement | Flake8 via CI pipeline, max-line-length=119 | ✅ |
+| Test coverage gate | pytest-cov, fail_under=80 | ✅ |

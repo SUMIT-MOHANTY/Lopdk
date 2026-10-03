@@ -32,8 +32,11 @@ def _require_env(name: str) -> str:
 # ---------------------------------------------------------------------------
 # Security — all three must be explicitly configured
 # ---------------------------------------------------------------------------
+
+# 1. SECRET_KEY — must be set and non-empty
 SECRET_KEY = _require_env("SECRET_KEY")
 
+# 2. DEBUG — must NOT be True in production
 _debug_raw = os.environ.get("DEBUG", "False").strip().lower()
 if _debug_raw in ("true", "1", "yes"):
     raise ImproperlyConfigured(
@@ -42,6 +45,7 @@ if _debug_raw in ("true", "1", "yes"):
     )
 DEBUG = False
 
+# 3. ALLOWED_HOSTS — must be non-empty and must not contain '*'
 _allowed_hosts_raw = _require_env("ALLOWED_HOSTS")
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts_raw.split(",") if h.strip()]
 if not ALLOWED_HOSTS:

@@ -18,7 +18,7 @@
             "Verify manage.py executes without error and django-admin check --settings=config.settings.development passes"
         ],
         "depends_on": [],
-        "status": "running"
+        "status": "completed"
     },
     {
         "task_id": "b2696e75-ffbd-4f69-a66b-c2a87ed4a57b_TASK-01",
