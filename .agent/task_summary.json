@@ -1,58 +1,25 @@
 {
-  "total_tasks": 3,
-  "completed": 3,
+  "total_tasks": 1,
+  "completed": 1,
   "failed": 0,
-  "files_changed": 23,
+  "files_changed": 10,
   "tasks": {
-    "b2696e75-ffbd-4f69-a66b-c2a87ed4a57b_TASK-01": {
+    "b2696e75-ffbd-4f69-a66b-c2a87ed4a57b_TASK-02": {
       "status": "completed",
       "agent": "FrontendAgent",
       "lane": "frontend",
-      "elapsed_seconds": 186.9,
+      "elapsed_seconds": 388.0,
       "files_changed": [
-        "/workspace/apps/todos/forms.py",
-        "/workspace/apps/todos/models.py",
-        "/workspace/apps/todos/migrations/0001_initial.py",
-        "/workspace/apps/todos/apps.py",
-        "/workspace/apps/todos/admin.py",
-        "/workspace/apps/todos/templatetags/todo_filters.py",
-        "/workspace/apps/todos/urls.py",
-        "/workspace/apps/todos/views.py"
-      ]
-    },
-    "b2696e75-ffbd-4f69-a66b-c2a87ed4a57b_TASK-00": {
-      "status": "completed",
-      "agent": "BackendAgent",
-      "lane": "devops",
-      "elapsed_seconds": 308.8,
-      "files_changed": [
-        "/workspace/.github/workflows/ci.yml",
-        "/workspace/config/asgi.py",
-        "/workspace/manage.py",
-        "/workspace/config/settings/base.py",
-        "/workspace/config/wsgi.py",
-        "/workspace/.env.example",
-        "/workspace/setup.cfg",
-        "/workspace/.gitignore",
-        "/workspace/tests/test_settings.py",
-        "/workspace/requirements.txt",
-        "/workspace/pytest.ini",
-        "/workspace/config/urls.py",
-        "/workspace/config/settings/development.py",
-        "/workspace/config/settings/production.py"
-      ]
-    },
-    "b2696e75-ffbd-4f69-a66b-c2a87ed4a57b_TASK-05": {
-      "status": "completed",
-      "agent": "BackendAgent",
-      "lane": "devops",
-      "elapsed_seconds": 335.9,
-      "files_changed": [
-        "/workspace/.github/workflows/ci.yml",
-        "/workspace/docs/security_checklist.md",
-        "/workspace/.env.example",
-        "/workspace/setup.cfg",
-        "/workspace/config/settings/production.py"
+        "/workspace/templates/todos/todo_list.html",
+        "/workspace/templates/partials/_messages.html",
+        "/workspace/static/js/main.js",
+        "/workspace/templates/base.html",
+        "/workspace/templates/partials/_pagination.html",
+        "/workspace/templates/todos/todo_confirm_delete.html",
+        "/workspace/templates/todos/todo_detail.html",
+        "/workspace/templates/partials/_navbar.html",
+        "/workspace/static/css/custom.css",
+        "/workspace/templates/todos/todo_form.html"
       ]
     }
   }
