@@ -1,0 +1,28 @@
+{% if messages %}
+<div class="container mt-3" id="messages-container">
+  {% for message in messages %}
+  {# Django 'error' tag → Bootstrap 'danger' class; handle both #}
+  <div
+    class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show d-flex align-items-center"
+    role="alert"
+  >
+    {% if message.tags == 'success' %}
+      <i class="bi bi-check-circle-fill me-2 flex-shrink-0"></i>
+    {% elif message.tags == 'error' or message.tags == 'danger' %}
+      <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0"></i>
+    {% elif message.tags == 'warning' %}
+      <i class="bi bi-exclamation-circle-fill me-2 flex-shrink-0"></i>
+    {% else %}
+      <i class="bi bi-info-circle-fill me-2 flex-shrink-0"></i>
+    {% endif %}
+    <div>{{ message }}</div>
+    <button
+      type="button"
+      class="btn-close ms-auto"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

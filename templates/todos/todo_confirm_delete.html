@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete "{{ todo.title }}" | Django Todo App{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="{% url 'todos:todo-list' %}">
+        <i class="bi bi-list-task me-1"></i>Todos
+      </a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{% url 'todos:todo-detail' todo.pk %}">Detail</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Delete</li>
+  </ol>
+</nav>
+
+<!-- Delete Confirmation Card -->
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card shadow-sm border-danger">
+      <!-- Card Header -->
+      <div class="card-header bg-danger text-white py-3">
+        <h2 class="h5 mb-0 fw-bold">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
+        </h2>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body p-4">
+        <p class="mb-2 text-muted">You are about to permanently delete:</p>
+        <div class="p-3 bg-light rounded mb-4">
+          <p class="fw-semibold fs-5 mb-1">{{ todo.title }}</p>
+          <div class="d-flex gap-3 small text-muted">
+            <span>
+              <i class="bi bi-calendar3 me-1"></i>Created {{ todo.created_at|date:"F d, Y" }}
+            </span>
+            <span>
+              {% if todo.is_completed %}
+                <i class="bi bi-check-circle-fill me-1 text-success"></i>Complete
+              {% else %}
+                <i class="bi bi-circle me-1 text-secondary"></i>Pending
+              {% endif %}
+            </span>
+          </div>
+        </div>
+
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0"></i>
+          <div>This action <strong>cannot be undone</strong>. The todo will be permanently removed.</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2">
+          <form method="post" action="{% url 'todos:todo-delete' todo.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash me-1"></i>Yes, Delete
+            </button>
+          </form>
+          <a href="{% url 'todos:todo-detail' todo.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg me-1"></i>Cancel
+          </a>
+          <a href="{% url 'todos:todo-list' %}" class="btn btn-link text-muted">
+            <i class="bi bi-arrow-left me-1"></i>Back to List
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

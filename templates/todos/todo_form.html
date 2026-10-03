@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} | Django Todo App{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="{% url 'todos:todo-list' %}">
+        <i class="bi bi-list-task me-1"></i>Todos
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>
+  </ol>
+</nav>
+
+<!-- Form Card -->
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card shadow-sm">
+      <!-- Card Header -->
+      <div class="card-header py-3">
+        <h2 class="h5 mb-0 fw-bold">
+          {% if object %}
+            <i class="bi bi-pencil-square me-2 text-primary"></i>{{ page_title }}
+          {% else %}
+            <i class="bi bi-plus-circle me-2 text-primary"></i>{{ page_title }}
+          {% endif %}
+        </h2>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body p-4">
+        <form
+          method="post"
+          action=""
+          novalidate
+          id="todoForm"
+        >
+          {% csrf_token %}
+
+          <!-- Title Field -->
+          <div class="mb-4">
+            <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+              {{ form.title.label }}
+              <span class="text-danger ms-1" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="text"
+              name="{{ form.title.html_name }}"
+              id="{{ form.title.id_for_label }}"
+              class="form-control form-control-lg {% if form.title.errors %}is-invalid{% endif %}"
+              value="{% if form.title.value %}{{ form.title.value }}{% endif %}"
+              placeholder="Enter todo title..."
+              maxlength="255"
+              required
+              autofocus
+            >
+            {% if form.title.errors %}
+              <div class="invalid-feedback">
+                {% for error in form.title.errors %}
+                  <span>{{ error }}</span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="form-text text-muted" id="titleHelpText">
+                <i class="bi bi-info-circle me-1"></i>Maximum 255 characters.
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- is_completed checkbox (shown on edit only) -->
+          {% if object %}
+          <div class="mb-4">
+            <div class="form-check form-switch">
+              <input
+                class="form-check-input {% if form.is_completed.errors %}is-invalid{% endif %}"
+                type="checkbox"
+                role="switch"
+                name="{{ form.is_completed.html_name }}"
+                id="{{ form.is_completed.id_for_label }}"
+                {% if form.is_completed.value %}checked{% endif %}
+              >
+              <label class="form-check-label fw-semibold" for="{{ form.is_completed.id_for_label }}">
+                {{ form.is_completed.label }}
+              </label>
+            </div>
+            {% if form.is_completed.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.is_completed.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <!-- Non-field errors -->
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% for error in form.non_field_errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Submit & Cancel -->
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-{% if object %}save{% else %}plus-circle{% endif %} me-1"></i>
+              {{ submit_label }}
+            </button>
+            <a href="{% url 'todos:todo-list' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-lg me-1"></i>Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

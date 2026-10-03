@@ -1,0 +1,45 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold" href="{% url 'todos:todo-list' %}">
+      <i class="bi bi-check2-square me-2"></i>Django Todo App
+    </a>
+
+    <!-- Mobile toggle -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarMain"
+      aria-controls="navbarMain"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Nav links -->
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'todo-list' %}active{% endif %}"
+            href="{% url 'todos:todo-list' %}"
+            aria-current="{% if request.resolver_match.url_name == 'todo-list' %}page{% endif %}"
+          >
+            <i class="bi bi-list-task me-1"></i>Todo List
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link btn btn-outline-light btn-sm ms-lg-2 px-3 {% if request.resolver_match.url_name == 'todo-create' %}active{% endif %}"
+            href="{% url 'todos:todo-create' %}"
+          >
+            <i class="bi bi-plus-circle me-1"></i>Add New Todo
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
