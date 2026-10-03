@@ -13,6 +13,5 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # Todos app URLs — uncomment once apps/todos/urls.py is created by TASK-01
-    # path("todos/", include("apps.todos.urls")),
+    path("todos/", include("apps.todos.urls", namespace="todos")),
 ]

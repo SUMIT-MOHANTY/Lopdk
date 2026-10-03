@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "corsheaders",
-    # Local apps  (added by individual app tasks)
-    # "apps.todos",
+    # Local apps
+    "apps.todos",
 ]
 
 MIDDLEWARE = [
